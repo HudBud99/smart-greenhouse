@@ -1,0 +1,43 @@
+[Unit]
+# Human-readable name shown in systemctl status output
+Description=Greenhouse Automation Controller
+
+# Don't start this service until the network is up
+# (not strictly required here but good practice for Pi projects)
+After=network.target
+
+[Service]
+# Full path to python3 and the main script
+# If you installed python differently, find it with: which python3
+ExecStart=/usr/bin/python3 /home/pi/greenhouse/main.py
+
+# Working directory — relative file paths in the code resolve from here
+WorkingDirectory=/home/pi/greenhouse
+
+# always = restart the service no matter why it stopped (crash, error, etc.)
+# This is what makes the system self-healing for 24/7 operation
+Restart=always
+
+# Wait 10 seconds before attempting a restart
+# Prevents a rapid crash loop from hammering the hardware
+RestartSec=10
+
+# Run as the pi user, not root
+# The pi user has GPIO access via the gpio group
+User=pi
+Group=pi
+
+# Pipe all print() output and errors to the systemd journal
+# View with: sudo journalctl -u greenhouse -f
+StandardOutput=journal
+StandardError=journal
+
+# Grant access to hardware interfaces
+# gpio = RPi.GPIO and MCP23017 (I2C)
+# spi  = MCP3008 SPI bus
+# i2c  = MCP23017 I2C bus
+SupplementaryGroups=gpio spi i2c
+
+[Install]
+# Start this service when the Pi reaches the normal multi-user boot target
+WantedBy=multi-user.target
